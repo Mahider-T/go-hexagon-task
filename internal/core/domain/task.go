@@ -11,10 +11,10 @@ const (
 )
 
 type Task struct {
-	id          string
-	title       string
-	description string
-	status      TaskStatus
-	createdAt   time.Time
-	updatedAt   time.Time
+	Id          string
+	Title       string
+	Description string
+	Status      TaskStatus
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
