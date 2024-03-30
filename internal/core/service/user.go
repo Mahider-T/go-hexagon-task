@@ -1,24 +1,26 @@
 package service
 
 import (
+	"fmt"
 	"go-hexagon-task/internal/core/domain"
 	"go-hexagon-task/internal/core/port"
 )
 
 type UserService struct {
-	repo port.UserRepository
+	userRepo port.UserRepository
 }
 
-func CreateUserService(repo port.UserRepository) *UserService {
+func CreateUserService(port port.UserRepository) *UserService {
 	return &UserService{
-		repo,
+		userRepo: port,
 	}
 }
 
-func (us UserService) Register(usr domain.User) (*domain.User, error) {
-	user, err := us.repo.CreateUser(usr)
+func (us UserService) Register(usr *domain.User) (*domain.User, error) {
+	user, err := us.userRepo.CreateUser(usr)
 
 	if err != nil {
+		fmt.Println("Error at user service")
 		return nil, err
 	}
 
@@ -27,7 +29,7 @@ func (us UserService) Register(usr domain.User) (*domain.User, error) {
 
 func (us UserService) GetUser(id string) (*domain.User, error) {
 
-	user, err := us.repo.GetUserById(id)
+	user, err := us.userRepo.GetUserById(id)
 
 	if err != nil {
 		return nil, err
@@ -38,7 +40,7 @@ func (us UserService) GetUser(id string) (*domain.User, error) {
 
 func (us UserService) Remove(id string) error {
 
-	err := us.repo.DeleteUser(id)
+	err := us.userRepo.DeleteUser(id)
 
 	if err != nil {
 		return err

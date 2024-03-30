@@ -4,6 +4,7 @@ import (
 	// "fmt"
 	"database/sql"
 	"flag"
+	"fmt"
 
 	_ "github.com/lib/pq"
 )
@@ -17,10 +18,12 @@ func ConnectDB() (*Database, error) {
 	db, err := sql.Open("postgres", *dsn)
 
 	if err != nil {
+		fmt.Println("Can't open DB")
 		return nil, err
 	}
 
 	if err := db.Ping(); err != nil {
+		fmt.Println("Can't ping db")
 		return nil, err
 	}
 

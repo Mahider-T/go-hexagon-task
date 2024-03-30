@@ -11,7 +11,7 @@ const (
 )
 
 type Task struct {
-	Id          string
+	Id          int
 	Title       string
 	Description string
 	Status      TaskStatus
