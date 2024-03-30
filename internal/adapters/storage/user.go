@@ -17,10 +17,7 @@ func NewUserRepository(db *Database) *UserRepository {
 
 func (ur *UserRepository) CreateUser(usr *domain.User) (*domain.User, error) {
 
-	// stmt := `INSERT INTO users (id, name, username, password, createdAt)
-	// VALUES(?, ?, ?, ?, UTC_TIMESTAMP())`
-	stmt := `INSERT INTO users (id, name, username, password, createdAt)
-	    	 VALUES(?, ?, ?, ?, UTC_TIMESTAMP())`
+	stmt := `INSERT INTO users (id, name, username, password, createdAt) VALUES($1, $2, $3, $4, CURRENT_TIMESTAMP)`
 	_, err := ur.db.db.Exec(stmt, usr.Id, usr.Name, usr.Username, usr.Password)
 	if err != nil {
 		fmt.Println("Error at storage query execution")

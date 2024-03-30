@@ -29,6 +29,7 @@ func (uh UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	var newUser *domain.User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
+	fmt.Println(newUser)
 	if err != nil {
 		// w.Write([]byte("Error decoding json"))
 		fmt.Fprintf(w, "error decoding json: %v", err)

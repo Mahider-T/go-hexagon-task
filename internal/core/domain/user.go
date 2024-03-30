@@ -7,5 +7,5 @@ type User struct {
 	Name      string
 	Username  string
 	Password  string
-	CreatedAt time.Time
+	Createdat time.Time
 }
