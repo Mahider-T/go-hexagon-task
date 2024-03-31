@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"database/sql"
 	"fmt"
 	"go-hexagon-task/internal/core/domain"
 )
@@ -26,15 +27,16 @@ func (ur *UserRepository) CreateUser(usr *domain.User) (*domain.User, error) {
 	return usr, nil
 }
 
-func (us *UserRepository) GetUserById(id string) (*domain.User, error) {
+// TODO : Show different error if user with the given id does not exist in
+// the database
+func (us *UserRepository) GetUserById(id int) (*domain.User, error) {
 
-	stmt := `SELECT id, name, username, password, FROM users
-	WHERE id = ?`
+	stmt := `SELECT * FROM users WHERE id = $1`
 
 	usr := &domain.User{}
 	row := us.db.db.QueryRow(stmt, id)
 
-	err := row.Scan(usr.Id, usr.Name, usr.Username, usr.Password)
+	err := row.Scan(&usr.Id, &usr.Name, &usr.Username, &usr.Password, &usr.Createdat)
 
 	if err != nil {
 		return nil, err
@@ -43,10 +45,25 @@ func (us *UserRepository) GetUserById(id string) (*domain.User, error) {
 	return usr, nil
 
 }
-func (us UserRepository) DeleteUser(id string) error {
-	stmt := `DELETE FROM users WHERE id = ?`
+func (us UserRepository) DeleteUser(id int) error {
 
-	_, err := us.db.db.Exec(stmt, id)
+	var exists bool
+	checkStmt := "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)"
+
+	err := us.db.db.QueryRow(checkStmt, id).Scan(&exists)
+
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return sql.ErrNoRows
+	}
+
+	deleteStmt := `DELETE FROM users WHERE id = $1`
+
+	_, err = us.db.db.Exec(deleteStmt, id)
+
 	if err != nil {
 		return err
 	}

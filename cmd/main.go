@@ -10,6 +10,10 @@ import (
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
+	if r.RequestURI != "/" {
+		fmt.Fprintf(w, "Not Found")
+		return
+	}
 	w.Write([]byte("hello"))
 }
 

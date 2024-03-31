@@ -27,18 +27,19 @@ func (us UserService) Register(usr *domain.User) (*domain.User, error) {
 	return user, nil
 }
 
-func (us UserService) GetUser(id string) (*domain.User, error) {
+func (us UserService) GetUser(id int) (*domain.User, error) {
 
 	user, err := us.userRepo.GetUserById(id)
 
 	if err != nil {
+		fmt.Println("Error at service")
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (us UserService) Remove(id string) error {
+func (us UserService) Remove(id int) error {
 
 	err := us.userRepo.DeleteUser(id)
 

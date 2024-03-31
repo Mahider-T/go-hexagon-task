@@ -5,15 +5,15 @@ import (
 )
 
 type TaskRepository interface {
-	GetTaskById(id string) (*domain.Task, error)
+	GetTaskById(id int) (*domain.Task, error)
 	CreateTask(domain.Task) (*domain.Task, error)
 	GetTasks() (*[]domain.Task, error)
-	UpdateTask(id string, tsk domain.Task) (*domain.Task, error)
+	UpdateTask(id int, tsk domain.Task) (*domain.Task, error)
 }
 
 type TaskService interface {
 	AddTask(tsk domain.Task) (*domain.Task, error)
-	GetTask(id string) (*domain.Task, error)
-	UpdateTask(id string, tsk domain.Task) (*domain.Task, error)
+	GetTask(id int) (*domain.Task, error)
+	UpdateTask(id int, tsk domain.Task) (*domain.Task, error)
 	ListTask() (*[]domain.Task, error)
 }
