@@ -25,11 +25,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	//service, repo, handler
-
+	//user repo, service, handler
 	userRepo := storage.NewUserRepository(db)
 	userService := service.CreateUserService(userRepo)
-	us := handlers.NewUserServiceHandler(userService)
+	us := handlers.NewUserHandler(userService)
+
+	//user repo, service, handler
+	taskRepo := storage.NewTaskRepository(db)
+	taskService := service.NewTaskService(taskRepo)
+	th := handlers.NewTaskHandler(taskService)
 
 	mux := http.NewServeMux()
 
@@ -37,6 +41,8 @@ func main() {
 	mux.HandleFunc("/user/register", us.Register)
 	mux.HandleFunc("/user/get", us.GetUser)
 	mux.HandleFunc("/user/remove", us.Remove)
+
+	mux.HandleFunc("/task/create", th.AddTask)
 
 	fmt.Println(`Listening on :4000`)
 

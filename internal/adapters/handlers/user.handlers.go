@@ -21,7 +21,7 @@ type UserCreateRequest struct {
 	Password string `json:"password"`
 }
 
-func NewUserServiceHandler(ser port.UserService) *UserHandler {
+func NewUserHandler(ser port.UserService) *UserHandler {
 	return &UserHandler{
 		ser,
 	}
@@ -41,8 +41,7 @@ func (uh UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	fmt.Println(newUser)
 	if err != nil {
-		// w.Write([]byte("Error decoding json"))
-		fmt.Fprintf(w, "error decoding json: %v", err)
+		fmt.Fprintf(w, "error decoding json")
 		fmt.Println(err)
 		return
 	}
