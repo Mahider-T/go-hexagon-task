@@ -7,6 +7,8 @@ import (
 	"go-hexagon-task/internal/core/service"
 	"log"
 	"net/http"
+
+	"github.com/justinas/alice"
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -18,6 +20,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+
 	db, err := storage.ConnectDB()
 
 	if err != nil {
@@ -44,7 +47,10 @@ func main() {
 	mux.HandleFunc("/user/login", us.Login)
 	mux.HandleFunc("/user/logout", us.Logout)
 
-	mux.HandleFunc("/task/create", th.AddTask)
+	protected := alice.New(authMiddleware)
+	// handler := AuthMiddleware(http.HandlerFunc(th.AddTask))
+	mux.Handle("/task/create", protected.ThenFunc(th.AddTask))
+
 	mux.HandleFunc("/task/update", th.UpdateTask)
 	mux.HandleFunc("/task/list", th.ListTasks)
 

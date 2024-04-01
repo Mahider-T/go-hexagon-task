@@ -12,8 +12,13 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-// var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
-var store = sessions.NewCookieStore([]byte("mysessionkeyisasfollows"))
+// var Store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+var Store = sessions.NewCookieStore([]byte("mysessionkeyisasfollows"))
+
+type User struct {
+	Id            int
+	Authenticated bool
+}
 
 type UserHandler struct {
 	ser port.UserService
@@ -146,13 +151,19 @@ func (uh UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error logging in")
 		return
 	}
-	session, err := store.Get(r, "user-id")
+	session, err := Store.Get(r, "user-id")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	session.Values["id"] = usr.Id
+	user := &User{
+		Id:            usr.Id,
+		Authenticated: true,
+	}
+
+	session.Values["user"] = user
+
 	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -164,7 +175,7 @@ func (uh UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	session, err := store.Get(r, "user-id")
+	session, err := Store.Get(r, "user-id")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
