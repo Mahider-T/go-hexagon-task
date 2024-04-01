@@ -18,8 +18,8 @@ func NewUserRepository(db *Database) *UserRepository {
 
 func (ur *UserRepository) CreateUser(usr *domain.User) (*domain.User, error) {
 
-	stmt := `INSERT INTO users (id, name, username, password, createdAt) VALUES($1, $2, $3, $4, CURRENT_TIMESTAMP)`
-	_, err := ur.db.db.Exec(stmt, usr.Id, usr.Name, usr.Username, usr.Password)
+	stmt := `INSERT INTO users (name, username, password, createdAt) VALUES($1, $2, $3, CURRENT_TIMESTAMP)`
+	_, err := ur.db.db.Exec(stmt, usr.Name, usr.Username, usr.Password)
 	if err != nil {
 		fmt.Println("Error at storage query execution")
 		return nil, err
@@ -45,6 +45,22 @@ func (us *UserRepository) GetUserById(id int) (*domain.User, error) {
 	return usr, nil
 
 }
+
+func (us *UserRepository) GetUserByUsername(username string) (*domain.User, error) {
+	stmt := `SELECT * FROM users WHERE username = $1`
+
+	usr := &domain.User{}
+	row := us.db.db.QueryRow(stmt, username)
+
+	err := row.Scan(&usr.Id, &usr.Name, &usr.Username, &usr.Password, &usr.Createdat)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return usr, nil
+
+}
 func (us UserRepository) DeleteUser(id int) error {
 
 	var exists bool
@@ -53,7 +69,7 @@ func (us UserRepository) DeleteUser(id int) error {
 	err := us.db.db.QueryRow(checkStmt, id).Scan(&exists)
 
 	if err != nil {
-		return err
+		return domain.ErrNoRecord
 	}
 
 	if !exists {

@@ -41,8 +41,12 @@ func main() {
 	mux.HandleFunc("/user/register", us.Register)
 	mux.HandleFunc("/user/get", us.GetUser)
 	mux.HandleFunc("/user/remove", us.Remove)
+	mux.HandleFunc("/user/login", us.Login)
+	mux.HandleFunc("/user/logout", us.Logout)
 
 	mux.HandleFunc("/task/create", th.AddTask)
+	mux.HandleFunc("/task/update", th.UpdateTask)
+	mux.HandleFunc("/task/list", th.ListTasks)
 
 	fmt.Println(`Listening on :4000`)
 

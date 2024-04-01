@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"go-hexagon-task/internal/core/domain"
 	"go-hexagon-task/internal/core/port"
+	"go-hexagon-task/internal/utils"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
@@ -17,6 +20,13 @@ func CreateUserService(port port.UserRepository) *UserService {
 }
 
 func (us UserService) Register(usr *domain.User) (*domain.User, error) {
+	hashedPass, err := utils.HashPassword(usr.Password)
+	usr.Password = hashedPass
+
+	if err != nil {
+		return nil, err
+	}
+
 	user, err := us.userRepo.CreateUser(usr)
 
 	if err != nil {
@@ -47,4 +57,23 @@ func (us UserService) Remove(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (us UserService) Login(username string, password string) (*domain.User, error) {
+	usr, err := us.userRepo.GetUserByUsername(username)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = utils.ComparePass(usr.Password, password)
+
+	if err != nil {
+		fmt.Println(err)
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return nil, domain.ErrInvalidCredentials
+		}
+		return nil, err
+	}
+	return usr, nil
 }

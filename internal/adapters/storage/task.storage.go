@@ -69,7 +69,7 @@ func (ts TaskRepository) GetTasks() ([]*domain.Task, error) {
 func (ts TaskRepository) UpdateTask(id int, sts *domain.TaskStatus) error {
 	stmt := `UPDATE tasks SET status = $1 WHERE id = $2`
 
-	_, err := ts.db.db.Exec(stmt, id, sts)
+	_, err := ts.db.db.Exec(stmt, sts, id)
 
 	if err != nil {
 		return nil

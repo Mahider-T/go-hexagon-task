@@ -8,15 +8,24 @@ import (
 	"go-hexagon-task/internal/core/port"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/sessions"
 )
+
+// var store = sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY")))
+var store = sessions.NewCookieStore([]byte("mysessionkeyisasfollows"))
 
 type UserHandler struct {
 	ser port.UserService
 }
 
 type UserCreateRequest struct {
-	Id       int    `json:"id"`
 	Name     string `json:"name"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type UserLoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
@@ -39,7 +48,6 @@ func (uh UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	var newUser *domain.User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
-	fmt.Println(newUser)
 	if err != nil {
 		fmt.Fprintf(w, "error decoding json")
 		fmt.Println(err)
@@ -110,4 +118,66 @@ func (uh UserHandler) Remove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprintf(w, "Successfully removed user")
+}
+
+func (uh UserHandler) Login(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", http.MethodPost)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var loginInput *UserLoginRequest
+	err := json.NewDecoder(r.Body).Decode(&loginInput)
+
+	if err != nil {
+		fmt.Fprintf(w, "Could not decode json")
+		return
+	}
+
+	usr, err := uh.ser.Login(loginInput.Username, loginInput.Password)
+
+	//TODO : Two types of errors : system and invalid credentials
+	if err != nil {
+		if err == domain.ErrInvalidCredentials {
+			fmt.Fprintf(w, "Invalid credentials")
+			return
+		}
+		fmt.Fprintf(w, "Error logging in")
+		return
+	}
+	session, err := store.Get(r, "user-id")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["id"] = usr.Id
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Fprintf(w, "Logged in successfully!")
+	http.Redirect(w, r, "/task/create", http.StatusSeeOther)
+}
+
+func (uh UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	session, err := store.Get(r, "user-id")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	session.Values["id"] = ""
+	session.Options.MaxAge = -1
+
+	err = session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/user/login", http.StatusFound)
+
 }
