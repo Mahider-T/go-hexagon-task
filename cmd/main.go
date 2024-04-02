@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"go-hexagon-task/internal/adapters/handlers"
 	"go-hexagon-task/internal/adapters/storage"
@@ -8,18 +9,36 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+
 	"github.com/justinas/alice"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
-	if r.RequestURI != "/" {
-		fmt.Fprintf(w, "Not Found")
-		return
+var store *sessions.FilesystemStore
+
+func init() {
+	authKeyOne := securecookie.GenerateRandomKey(64)
+	encryptionKeyOne := securecookie.GenerateRandomKey(32)
+
+	store = sessions.NewFilesystemStore(
+		"",
+		authKeyOne,
+		encryptionKeyOne,
+	)
+
+	store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   60 * 15,
+		HttpOnly: true,
 	}
-	w.Write([]byte("hello"))
+
+	gob.Register(handlers.User{})
 }
 
 func main() {
+
+	SetEnv()
 
 	db, err := storage.ConnectDB()
 
@@ -31,26 +50,25 @@ func main() {
 	//user repo, service, handler
 	userRepo := storage.NewUserRepository(db)
 	userService := service.CreateUserService(userRepo)
-	us := handlers.NewUserHandler(userService)
+	uh := handlers.NewUserHandler(userService)
 
-	//user repo, service, handler
+	//task repo, service, handler
 	taskRepo := storage.NewTaskRepository(db)
 	taskService := service.NewTaskService(taskRepo)
 	th := handlers.NewTaskHandler(taskService)
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/user/register", us.Register)
-	mux.HandleFunc("/user/get", us.GetUser)
-	mux.HandleFunc("/user/remove", us.Remove)
-	mux.HandleFunc("/user/login", us.Login)
-	mux.HandleFunc("/user/logout", us.Logout)
+	mux.HandleFunc("/", uh.Home)
+	mux.HandleFunc("/user/register", uh.Register)
+	mux.HandleFunc("/user/get", uh.GetUser)
+	mux.HandleFunc("/user/remove", uh.Remove)
+	mux.HandleFunc("/user/login", uh.Login)
+	mux.HandleFunc("/user/logout", uh.Logout)
 
 	protected := alice.New(authMiddleware)
-	// handler := AuthMiddleware(http.HandlerFunc(th.AddTask))
-	mux.Handle("/task/create", protected.ThenFunc(th.AddTask))
 
+	mux.Handle("/task/create", protected.ThenFunc(th.AddTask))
 	mux.HandleFunc("/task/update", th.UpdateTask)
 	mux.HandleFunc("/task/list", th.ListTasks)
 

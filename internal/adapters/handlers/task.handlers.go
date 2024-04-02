@@ -15,7 +15,6 @@ type TaskHandler struct {
 }
 
 type TaskCreateRequest struct {
-	Id          int               `json: "id"`
 	Title       string            `json: "title"`
 	Description string            `json: "description"`
 	Status      domain.TaskStatus `json: "status"`

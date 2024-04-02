@@ -28,9 +28,9 @@ func (ts TaskRepository) GetTaskById(id int) (*domain.Task, error) {
 }
 
 func (ts TaskRepository) CreateTask(tsk *domain.Task) error {
-	stmt := `INSERT INTO tasks(id, title, description, status, createdat) VALUES($1, $2, $3, $4, now())`
+	stmt := `INSERT INTO tasks(title, description, status, createdat) VALUES($1, $2, $3, now())`
 
-	_, err := ts.db.db.Exec(stmt, tsk.Id, tsk.Title, tsk.Description, tsk.Status)
+	_, err := ts.db.db.Exec(stmt, tsk.Title, tsk.Description, tsk.Status)
 
 	if err != nil {
 		return err

@@ -192,3 +192,11 @@ func (uh UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusFound)
 
 }
+
+func (uh UserHandler) Home(w http.ResponseWriter, r *http.Request) {
+	if r.RequestURI != "/" {
+		fmt.Fprintf(w, "Not Found")
+		return
+	}
+	w.Write([]byte("hello"))
+}
